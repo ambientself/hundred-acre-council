@@ -4,7 +4,7 @@ Usage: python3 -I make_dossier.py <workflow output file or result json> <out dos
 
 Accepts either the task output file (an object with a "result" list) or the bare
 result list. Each gatherer entry needs key, facts, gaps, and optionally prefix
-and title (the original platformx run used a fixed prefix map instead).
+and title.
 """
 import json
 import sys

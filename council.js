@@ -12,7 +12,7 @@ export const meta = {
 }
 
 // args: { topic, question, dossier, today, horizon, controls }
-//   topic    short name of the thing being decided ("platformx")
+//   topic    short name of the thing being decided ("billing-rewrite")
 //   question the decision question the council answers
 //   dossier  text of cited facts, each with an id like R01; characters may only cite these ids (or URLs Owl finds)
 //   today    YYYY-MM-DD (scripts cannot read the clock)
@@ -36,10 +36,10 @@ ${DOSSIER}
 </dossier>`
 
 const BRIEF = `THE QUESTION: ${QUESTION}
-Today is ${TODAY}. The reader who decides is Ryan, the builder (Christopher Robin in this story).
+Today is ${TODAY}. The reader who decides is the builder (Christopher Robin in this story).
 
 ${DOSSIER_BLOCK}
-Refer to people other than Ryan by role or team, never by name. Do not change any files, tickets, PRs or cloud resources: this is a read-and-think task.`
+Refer to people other than the decider by role or team, never by name. Do not change any files, tickets, PRs or cloud resources: this is a read-and-think task.`
 
 // ---------- schemas ----------
 const POINTS = {
@@ -140,10 +140,10 @@ const VERDICT = {
       },
       description: 'Two or three candidate one-things and which reaches the stated goal soonest',
     },
-    question_for_ryan: { type: 'string', description: 'The one question only the decider can answer' },
+    question_for_decider: { type: 'string', description: 'The one question only the decider can answer' },
     in_character: { type: 'string', description: 'A short closing in voice. Empty for plain roles.' },
   },
-  required: ['the_one_thing', 'why', 'stop', 'keep', 'next_step', 'set_aside', 'finalists', 'question_for_ryan', 'in_character'],
+  required: ['the_one_thing', 'why', 'stop', 'keep', 'next_step', 'set_aside', 'finalists', 'question_for_decider', 'in_character'],
 }
 
 const JUDGE = {
@@ -166,7 +166,7 @@ const JUDGE = {
         required: ['label', 'grounded', 'actionable', 'insight', 'simplicity', 'candor', 'unique_strength', 'main_weakness'],
       },
     },
-    best: { type: 'string', description: 'Label of the recommendation Ryan should act on' },
+    best: { type: 'string', description: 'Label of the recommendation the decider should act on' },
     why_best: { type: 'string' },
     errors_found: { type: 'array', items: { type: 'string' }, description: 'Claims in any recommendation that the dossier contradicts, with label' },
   },
@@ -227,7 +227,7 @@ Rules:
 - Find the goal in the dossier and prefer the option that reaches it with the least building.
 - Cutting is the work: set_aside names what you cut, who it came from, and why.
 - finalists is your game of Poohsticks: drop the two or three best candidate one-things off the bridge and say which comes out first, meaning which reaches the goal soonest, and why.
-- Write the_one_thing, why, stop, keep, next_step and question_for_ryan in plain, direct language a busy engineer would act on, with fact ids. No bear voice there. Your voice goes only in in_character (three or four lines).`
+- Write the_one_thing, why, stop, keep, next_step and question_for_decider in plain, direct language a busy engineer would act on, with fact ids. No bear voice there. Your voice goes only in in_character (three or four lines).`
 
 const PLAIN_SYNTH_JOB = `You are the synthesizer on a strategy panel. You have the panel's proposals, critiques and the evidence check. Produce the panel's final recommendation. Weigh the proposals, account for the critiques and the evidence check, and give a clear recommendation with fact ids. set_aside lists ideas considered and not taken; finalists compares the two or three strongest candidates on how soon each reaches the goal named in the dossier. Leave in_character empty.`
 
@@ -246,7 +246,7 @@ function renderVerdict(v) {
     `NEXT STEP THIS WEEK: ${v.next_step}`,
     `CONSIDERED AND SET ASIDE: ${v.set_aside.map(s => `- ${s.idea}: ${s.why}`).join('\n')}`,
     `FINALISTS: ${v.finalists.map(f => `- ${f.option} (reaches goal by ${f.reaches_goal_by}): ${f.why}`).join('\n')}`,
-    `OPEN QUESTION: ${v.question_for_ryan}`,
+    `OPEN QUESTION: ${v.question_for_decider}`,
   ].join('\n\n')
 }
 
@@ -302,7 +302,7 @@ const LABELS = ['X', 'Y', 'Z']
 const judgements = (await parallel(ORDERS.map((order, k) => () => {
   const shown = order.map((idx, pos) => ({ label: LABELS[pos], id: entries[idx].id, text: entries[idx].text }))
   const body = shown.map(s => `=== RECOMMENDATION ${s.label} ===\n${s.text}`).join('\n\n')
-  return agent(`You are judging three independent recommendations that answer the same question from the same evidence dossier. You do not know how any of them was produced. Check claims against the dossier. Score each 1-5 on: grounded (claims trace to dossier facts, no errors), actionable (someone could start Monday), insight (sees something beyond the obvious), simplicity (asks for the least that works), candor (names uncomfortable truths). Then pick the one Ryan should act on and list any claim the dossier contradicts.\n\n${BRIEF}\n\n${body}`,
+  return agent(`You are judging three independent recommendations that answer the same question from the same evidence dossier. You do not know how any of them was produced. Check claims against the dossier. Score each 1-5 on: grounded (claims trace to dossier facts, no errors), actionable (someone could start Monday), insight (sees something beyond the obvious), simplicity (asks for the least that works), candor (names uncomfortable truths). Then pick the one the decider should act on and list any claim the dossier contradicts.\n\n${BRIEF}\n\n${body}`,
     { label: `judge-${k + 1}`, phase: 'Poohsticks', schema: JUDGE })
     .then(r => r ? { order: shown.map(s => ({ label: s.label, id: s.id })), ...r } : null)
 }))).filter(Boolean)

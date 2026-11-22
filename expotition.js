@@ -38,7 +38,7 @@ ${A.context || ''}
 
 Rules:
 - Read only. Never commit, push, comment, transition tickets, apply, or change any cloud, GitHub or Jira state. Do not switch branches or stash in a checkout other sessions may use.
-- Prefer MCP tools (GitHub, Atlassian, devex-knowledge, CloudZero) over gh/curl. Load them with ToolSearch.
+- Prefer MCP tools (GitHub, Atlassian, internal knowledge bases, cost tools) over gh/curl. Load them with ToolSearch.
 - Refer to people other than the decider by role or team, never by name or email. No secrets, tokens, account ids or endpoint URLs in claims.
 - Return 20 to 45 facts. Favour facts that bear on: is it working, who uses it, what it costs, how fast it moves, what is risky, what was promised vs delivered. Include surprising and uncomfortable facts, not just flattering ones. Each claim stands alone.
 - confidence: verified = you saw it in the source yourself just now; reported = a note or doc says so and you could not check it live; inferred = your own deduction from verified facts (say from which).

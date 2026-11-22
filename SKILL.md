@@ -54,6 +54,5 @@ The decider is Christopher Robin. The council advises; it never acts.
 - The plain panel differs from the council in two ways at once: no personas,
   and a synthesizer that is not told to only cut. Report it as a comparison of
   the whole Pooh package against a normal panel, not of costumes alone.
-- First run: platformx, 2026-11-22, in `docs/hundred-acre-council/2026-11-22-platformx/`.
-  That run's evidence gatherers were written inline; `expotition.js` is the
-  generic version of the same prompts.
+- `expotition.js` holds generic evidence-gatherer prompts; replace or extend
+  them with gatherers that fit the decision.
