@@ -1,6 +1,6 @@
 """Turn an expotition workflow result into a numbered dossier.md.
 
-Usage: python3 -I make_dossier.py <workflow output file or result json> <out dossier.md>
+Usage: python3 -I <this skill directory>/make_dossier.py <workflow output file or result json> <out dossier.md>
 
 Accepts either the task output file (an object with a "result" list) or the bare
 result list. Each gatherer entry needs key, facts, gaps, and optionally prefix
