@@ -48,6 +48,11 @@ standing memory, and an owner who decides — follows Hummingbird, a macOS app
 for keeping a small flock of such agents. This plugin is the same idea with
 the Hundred Acre Wood as the flock.
 
+## License
+
+MIT, see [LICENSE](LICENSE). The license covers this project's code and text,
+not the characters or the books credited below.
+
 ## Credits
 
 The idea comes from *The Tao of Pooh* by Benjamin Hoff (1982), which uses
