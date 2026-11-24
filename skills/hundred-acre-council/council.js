@@ -306,10 +306,12 @@ async function runPanel(persona) {
 
   const woozle = await agent(`${WOOZLE_JOB(persona, seated)}\n\n${BRIEF}\n\nPANEL MATERIAL:\n${proposalText}\n\n${critiqueText}`,
     { label: `${tag}:${persona ? 'woozle-hunt' : 'evidence-check'}`, phase: 'Woozle hunt', schema: WOOZLE, ...(persona ? seat('christopher-robin') : {}) })
+    .catch(() => null) // a seat can throw (e.g. an unknown agent type) as well as return null
   if (!woozle) log(`${tag}: the ${persona ? 'woozle hunt' : 'evidence check'} returned nothing; the verdict will treat every claim as unverified`)
 
   const verdict = await agent(`${persona ? POOH_JOB(seated) : PLAIN_SYNTH_JOB}\n\n${BRIEF}\n\nPROPOSALS:\n${proposalText}\n\nCRITIQUES:\n${critiqueText}\n\n${persona ? 'WOOZLE HUNT' : 'EVIDENCE CHECK'}:\n${woozle ? j(woozle) : '(the hunt failed; no claims were checked — treat every claim as unverified)'}`,
     { label: `${tag}:${persona ? 'pooh' : 'synthesizer'}`, phase: 'Pooh', schema: VERDICT, ...(persona ? seat('pooh') : {}) })
+    .catch(() => null)
   if (!verdict) log(`${tag}: the ${persona ? 'Pooh' : 'synthesizer'} verdict failed${hint}`)
 
   return { proposals, critiques, woozle, verdict }
