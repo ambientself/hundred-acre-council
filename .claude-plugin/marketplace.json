@@ -1,0 +1,14 @@
+{
+  "name": "hundred-acre-wood",
+  "description": "The Hundred Acre Wood: Winnie-the-Pooh character agents and the council that convenes them.",
+  "owner": {
+    "name": "Ryan Bennett"
+  },
+  "plugins": [
+    {
+      "name": "hundred-acre-council",
+      "source": "./",
+      "description": "Winnie-the-Pooh character agents with durable identities, consultable alone or convened as an evidence-grounded council."
+    }
+  ]
+}
