@@ -64,6 +64,8 @@ Winnie-the-Pooh, Christopher Robin, Piglet, Eeyore, Owl, Rabbit, Kanga, Roo
 and Tigger were created by A. A. Milne, with illustrations by E. H. Shepard,
 in *Winnie-the-Pooh* (1926) and *The House at Pooh Corner* (1928). The Disney
 versions of the characters, and the Winnie-the-Pooh trademarks, belong to
-Disney. This project uses the characters only as personas for agents, has no
-artwork, and is not affiliated with or endorsed by the Milne estate,
-E. H. Shepard's estate, Disney or Benjamin Hoff.
+Disney. This project uses the characters only as personas for agents, uses no
+Disney or Shepard artwork (the icon, a tree in a clearing ringed by eight
+seats, is original; its source is `assets/icon.svg`), and is not affiliated
+with or endorsed by the Milne estate, E. H. Shepard's estate, Disney or
+Benjamin Hoff.

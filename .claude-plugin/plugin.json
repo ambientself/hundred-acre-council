@@ -8,5 +8,6 @@
     "url": "https://github.com/ambientself"
   },
   "license": "MIT",
+  "icon": ".claude-plugin/icon.png",
   "keywords": ["agents", "council", "decision", "review", "pre-mortem", "tao-of-pooh"]
 }
