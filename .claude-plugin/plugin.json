@@ -4,7 +4,10 @@
   "version": "0.2.0",
   "description": "Winnie-the-Pooh persona agents with durable identities — Tigger ideas, Owl prior art, Rabbit plan, Kanga people, Piglet risk, Eeyore pre-mortem, Christopher Robin's woozle hunt, and Pooh, who decides by cutting — consultable one at a time or convened as a full evidence-grounded council.",
   "author": {
-    "name": "Ryan Bennett"
+    "name": "ambientself",
+    "url": "https://github.com/ambientself"
   },
+  "license": "MIT",
+  "icon": ".claude-plugin/icon.png",
   "keywords": ["agents", "council", "decision", "review", "pre-mortem", "tao-of-pooh"]
 }
