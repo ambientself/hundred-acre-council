@@ -70,14 +70,49 @@ for (const how of ['throw', 'null']) {
   })
 }
 
-test('with controls: plain panel and single agent never use character agents, three blind judges run', async () => {
+// Persona vocabulary that must never reach the plain panel or the single agent. The structured-output
+// field names (woozles, for_the_wood, in_character) are shared by design and are told to stay empty.
+const LORE = /Pooh|Tigger|Owl\b|Rabbit|Kanga|Roo\b|Piglet|Eeyore|Christopher|Heffalump|Woozle|Hundred Acre|honey|braver|up the tree|uncarved/i
+
+test('with controls: plain panel and single agent never use character agents or persona text', async () => {
   const { result, calls } = await run('council.js', { ...BASE, agent_prefix: 'hundred-acre-council:' })
   assert.equal(calls.length, 8 + 8 + 1 + 3)
-  const plain = calls.filter(c => /^plain:|^single-agent$/.test(c.label))
-  assert.equal(plain.length, 9)
-  assert.ok(plain.every(c => c.agentType === undefined))
-  assert.ok(plain.every(c => !/Tigger|Eeyore|Pooh|Woozle/.test(c.prompt.split('THE QUESTION')[0])))
+  const controls = calls.filter(c => /^plain:|^single-agent$/.test(c.label))
+  assert.equal(controls.length, 9)
+  for (const c of controls) {
+    assert.equal(c.agentType, undefined, c.label)
+    // the whole prompt, the job text included, plus the schema descriptions the model sees
+    const descriptions = []
+    const walk = (s) => { if (s && typeof s === 'object') for (const [k, v] of Object.entries(s)) k === 'description' ? descriptions.push(v) : walk(v) }
+    walk(c.schema)
+    const seen = c.prompt + '\n' + descriptions.join('\n')
+    assert.doesNotMatch(seen, LORE, `${c.label} leaks persona text: ${(seen.match(LORE) || [])[0]}`)
+  }
   assert.equal(result.judgements.length, 3)
+})
+
+test('the blind judges never see persona text either', async () => {
+  const { calls } = await run('council.js', { ...BASE, agent_prefix: 'hundred-acre-council:' })
+  for (const c of calls.filter(c => /^judge-/.test(c.label))) {
+    assert.doesNotMatch(c.prompt.split('=== RECOMMENDATION')[0], LORE, c.label)
+  }
+})
+
+test('an exhausted budget is rethrown, not reported as a failed seat', async () => {
+  const { loadWorkflow, stubAgent, parallel, pipeline } = await import('./harness.mjs')
+  const { fn } = loadWorkflow('council.js')
+  let spent = 0
+  const budget = { total: 100, spent: () => spent, remaining: () => Math.max(0, 100 - spent) }
+  const { agent: base } = stubAgent()
+  const agent = async (p, o) => {
+    if (/woozle-hunt/.test(o.label)) { spent = 100; throw new Error('token budget exhausted') }
+    return base(p, o)
+  }
+  const logs = []
+  // The rethrow ends the council branch; the outer parallel() turns it into null, as the runtime does.
+  const result = await fn(SEATED, agent, parallel, pipeline, m => logs.push(m), () => {}, budget)
+  assert.equal(result.council, null)
+  assert.ok(!logs.some(l => /plugin installed|returned nothing|verdict failed/.test(l)), logs.join(' | '))
 })
 
 test('with controls: a failed verdict skips the comparison instead of crashing', async () => {

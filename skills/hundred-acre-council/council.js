@@ -48,7 +48,7 @@ ${DOSSIER}
 </dossier>`
 
 const BRIEF = `THE QUESTION: ${QUESTION}
-Today is ${TODAY}. The reader who decides is the builder — Christopher Robin's player, not the character; the council advises and never acts.
+Today is ${TODAY}. The reader who decides is the builder; the panel advises and never acts.
 
 ${DOSSIER_BLOCK}
 Refer to people other than the decider by role or team, never by name. Never put secrets, tokens, account ids or endpoint URLs in your answer. Do not change any files, tickets, PRs or cloud resources: this is a read-and-think task.`
@@ -66,7 +66,7 @@ const POINTS = {
           title: { type: 'string' },
           detail: { type: 'string', description: 'What, why, and what it would take. Plain words.' },
           evidence: { type: 'array', items: { type: 'string' }, description: 'Fact ids or URLs. Empty means opinion.' },
-          failure_mode: { type: 'string', description: 'How this goes wrong (getting stuck up the tree)' },
+          failure_mode: { type: 'string', description: 'How this most likely goes wrong' },
         },
         required: ['title', 'detail', 'evidence', 'failure_mode'],
       },
@@ -124,7 +124,7 @@ const WOOZLE = {
     },
     solid: { type: 'array', items: { type: 'string' }, description: 'The most important claims that ARE well supported, with ids' },
     summary: { type: 'string' },
-    for_the_wood: { type: 'string', description: 'One line worth remembering at the next hunt on this topic, e.g. which kind of woozle this project breeds. Empty for the plain role.' },
+    for_the_wood: { type: 'string', description: 'One line worth remembering at the next hunt on this topic, e.g. which kinds of unsupported claim this project breeds. Empty for the plain role.' },
   },
   required: ['woozles', 'solid', 'summary', 'for_the_wood'],
 }
@@ -196,7 +196,7 @@ const PROPOSERS = [
     key: 'tigger', plain: 'ideation',
     persona: `You are Tigger. Tiggers are wonderful things, and quite sure they can do anything, which is how they end up stuck up trees. On this council you bring the big, bouncy ideas.`,
     plainRole: `You are the ideation analyst on a strategy panel.`,
-    job: `Propose 4 to 6 directions for ${TOPIC}. Include at least one that is surprising, at least one that means doing much LESS, and at least one that would make people outside the builder's own team say "I want that". Anchor every idea on at least one dossier fact. For each, failure_mode says what getting stuck up the tree would look like.`,
+    job: `Propose 4 to 6 directions for ${TOPIC}. Include at least one that is surprising, at least one that means doing much LESS, and at least one that would make people outside the builder's own team say "I want that". Anchor every idea on at least one dossier fact. For each, failure_mode says how the idea would most likely get stuck.`,
   },
   {
     key: 'owl', plain: 'research',
@@ -223,7 +223,7 @@ const CRITICS = [
     key: 'piglet', plain: 'risk',
     persona: `You are Piglet, a Very Small Animal entirely surrounded by risks. You notice the small things that turn out to be large.`,
     plainRole: `You are the risk reviewer on a strategy panel.`,
-    job: `Read every proposal below. Find what could hurt: security and blast radius, credentials, single points of failure (people included), environments that could be reset or lost, cost surprises, trust with other teams. Target each risk at a proposal (role + title) or "current state", with likelihood, impact, evidence ids and the smallest fix that would make you feel braver. No risks without evidence: frights about Heffalumps that are not there will be caught by the Woozle hunt. Leave story empty.`,
+    job: `Read every proposal below. Find what could hurt: security and blast radius, credentials, single points of failure (people included), environments that could be reset or lost, cost surprises, trust with other teams. Target each risk at a proposal (role + title) or "current state", with likelihood, impact, evidence ids and the smallest fix that would reduce it most. No risks without evidence: unsupported worries will be caught by the evidence check. Leave story empty.`,
   },
   {
     key: 'eeyore', plain: 'premortem',
@@ -250,6 +250,12 @@ const PLAIN_SYNTH_JOB = `You are the synthesizer on a strategy panel. You have t
 const SINGLE_JOB = `You are a senior engineering strategy advisor. Using only the dossier (plus WebSearch if you need outside context; cite URLs), answer the question with a single clear recommendation. set_aside lists options you considered and rejected; finalists compares the two or three strongest candidates on how soon each reaches the goal named in the dossier. Cite fact ids. Leave in_character and for_the_wood empty.`
 
 // ---------- helpers ----------
+// A failed seat becomes null so the run can degrade honestly, but an exhausted token
+// budget is not a failed seat: rethrow it rather than blame the plugin install.
+const seatFailed = (e) => {
+  if (typeof budget !== 'undefined' && budget && budget.total && budget.remaining() <= 0) throw e
+  return null
+}
 const j = (o) => JSON.stringify(o, null, 1)
 
 function renderVerdict(v) {
@@ -306,12 +312,12 @@ async function runPanel(persona) {
 
   const woozle = await agent(`${WOOZLE_JOB(persona, seated)}\n\n${BRIEF}\n\nPANEL MATERIAL:\n${proposalText}\n\n${critiqueText}`,
     { label: `${tag}:${persona ? 'woozle-hunt' : 'evidence-check'}`, phase: 'Woozle hunt', schema: WOOZLE, ...(persona ? seat('christopher-robin') : {}) })
-    .catch(() => null) // a seat can throw (e.g. an unknown agent type) as well as return null
+    .catch(seatFailed) // a seat can throw (e.g. an unknown agent type) as well as return null
   if (!woozle) log(`${tag}: the ${persona ? 'woozle hunt' : 'evidence check'} returned nothing; the verdict will treat every claim as unverified`)
 
-  const verdict = await agent(`${persona ? POOH_JOB(seated) : PLAIN_SYNTH_JOB}\n\n${BRIEF}\n\nPROPOSALS:\n${proposalText}\n\nCRITIQUES:\n${critiqueText}\n\n${persona ? 'WOOZLE HUNT' : 'EVIDENCE CHECK'}:\n${woozle ? j(woozle) : '(the hunt failed; no claims were checked — treat every claim as unverified)'}`,
+  const verdict = await agent(`${persona ? POOH_JOB(seated) : PLAIN_SYNTH_JOB}\n\n${BRIEF}\n\nPROPOSALS:\n${proposalText}\n\nCRITIQUES:\n${critiqueText}\n\n${persona ? 'WOOZLE HUNT' : 'EVIDENCE CHECK'}:\n${woozle ? j(persona ? woozle : { flagged_claims: woozle.woozles, solid: woozle.solid, summary: woozle.summary }) : '(the hunt failed; no claims were checked — treat every claim as unverified)'}`,
     { label: `${tag}:${persona ? 'pooh' : 'synthesizer'}`, phase: 'Pooh', schema: VERDICT, ...(persona ? seat('pooh') : {}) })
-    .catch(() => null)
+    .catch(seatFailed)
   if (!verdict) log(`${tag}: the ${persona ? 'Pooh' : 'synthesizer'} verdict failed${hint}`)
 
   return { proposals, critiques, woozle, verdict }

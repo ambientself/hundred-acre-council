@@ -21,7 +21,8 @@ jobs:
 
       - name: Validate the plugin (directory profile)
         run: |
-          npm install --global @anthropic-ai/claude-code
+          # Pinned: validate's checks change between releases. Bump deliberately.
+          npm install --global @anthropic-ai/claude-code@2.1.325
           claude plugin validate --profile directory .
 
       - name: Check the manifests are valid JSON

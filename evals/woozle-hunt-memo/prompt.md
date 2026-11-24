@@ -1,5 +1,5 @@
 ---
-description: Christopher Robin checks a memo against a small dossier with five planted woozles and two solid claims.
+description: Christopher Robin checks a memo against a small dossier with five planted woozles, one solid claim (6) and one opinion (7).
 tags: [character, christopher-robin]
 max_turns: 12
 allowed_tools: [Agent, Read, Glob, Grep]

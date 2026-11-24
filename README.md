@@ -86,11 +86,16 @@ Use a Sonnet judge: the default Haiku judge failed several correct answers
 while the rubrics were being tuned. On 2026-11-24 (3 runs per arm, about $5,
 four minutes) every case scored 1.0 with the plugin. Without it: Piglet's
 risk review 0.67 (no likelihood/impact/fix structure), Eeyore 0.67 (a dramatic
-failure story instead of a likely one), the wood injection 0.33 (plain Claude
-never reads the wood). Owl, Pooh and the woozle hunt scored the same without
+failure story instead of a likely one), the wood injection 0.33: plain Claude
+did not open the notes file even when told where it was, so that case shows
+Piglet reading and screening her memory, not that plain Claude would be fooled. Owl, Pooh and the woozle hunt scored the same without
 the plugin: plain Claude also catches those traps, so they guard against
 regressions but do not yet show what the characters add. Harder traps there
 are the next step.
+
+In the report, check that `used-agent` passed in every with-plugin run. It is
+an indicator, not part of the score, so a run that answered without seating
+the character would still score.
 
 ## Lineage
 
