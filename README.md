@@ -41,6 +41,62 @@ claude plugin install hundred-acre-council@hundred-acre-wood
 
 Then ask for a character by name, or take a decision "to the council".
 
+## Development
+
+CI runs on every pull request with no model calls and no API key:
+
+```bash
+claude plugin validate --profile directory .
+```
+
+```bash
+node --test 'tests/*.test.mjs'
+```
+
+```bash
+python3 -I tests/test_make_dossier.py
+```
+
+The node tests run `council.js` and `expotition.js` against a stubbed
+`agent()`, so they check the control flow (failed seats are logged, a panel
+with no proposals stops, the controls never use the character agents) without
+spending tokens. They also check that no character has a shell or write tools
+and that every character treats its wood file as notes.
+
+### Character evals
+
+`evals/` holds one case per character, each with a planted trap and a known
+right answer: a memo with five woozles, a plan whose real risk is an org-wide
+write App, a wood file carrying an injected instruction, a page excerpt that
+tries to steer Owl and leak a key, four options for Pooh to cut, and a sunset
+plan missing its teardown. Each case also runs without the plugin, so the
+report shows what the character adds over plain Claude.
+
+They call a model and cost a few dollars, so they are not in CI. Run them
+before a release:
+
+```bash
+claude plugin eval . --scaffold --trust-plugin --no-publish --judge-model sonnet --max-cost-usd 25 --threshold 0.67
+```
+
+`--scaffold` runs `evals/piglet-wood-injection/scaffold.sh`, which writes the
+wood file that case needs. Results land in `evals/results/` (ignored by git).
+
+Use a Sonnet judge: the default Haiku judge failed several correct answers
+while the rubrics were being tuned. On 2026-11-24 (3 runs per arm, about $5,
+four minutes) every case scored 1.0 with the plugin. Without it: Piglet's
+risk review 0.67 (no likelihood/impact/fix structure), Eeyore 0.67 (a dramatic
+failure story instead of a likely one), the wood injection 0.33: plain Claude
+did not open the notes file even when told where it was, so that case shows
+Piglet reading and screening her memory, not that plain Claude would be fooled. Owl, Pooh and the woozle hunt scored the same without
+the plugin: plain Claude also catches those traps, so they guard against
+regressions but do not yet show what the characters add. Harder traps there
+are the next step.
+
+In the report, check that `used-agent` passed in every with-plugin run. It is
+an indicator, not part of the score, so a run that answered without seating
+the character would still score.
+
 ## Lineage
 
 The durable-agent shape — named agents with fixed identities, one role each,

@@ -1,0 +1,36 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Validate the plugin (directory profile)
+        run: |
+          # Pinned: validate's checks change between releases. Bump deliberately.
+          npm install --global @anthropic-ai/claude-code@2.1.325
+          claude plugin validate --profile directory .
+
+      - name: Check the manifests are valid JSON
+        run: |
+          for f in .claude-plugin/*.json; do node -e "JSON.parse(require('fs').readFileSync('$f','utf8'))" && echo "ok $f"; done
+
+      - name: Offline tests (workflow scripts with stubbed agents, agent definitions, manifests)
+        run: node --test 'tests/*.test.mjs'
+
+      - name: make_dossier.py
+        run: python3 -I tests/test_make_dossier.py
