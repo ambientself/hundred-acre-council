@@ -47,3 +47,18 @@ The durable-agent shape — named agents with fixed identities, one role each,
 standing memory, and an owner who decides — follows Hummingbird, a macOS app
 for keeping a small flock of such agents. This plugin is the same idea with
 the Hundred Acre Wood as the flock.
+
+## Credits
+
+The idea comes from *The Tao of Pooh* by Benjamin Hoff (1982), which uses
+Winnie-the-Pooh to explain Taoism and holds that Pooh's simplicity beats
+everyone else's cleverness. That is the council's bias: Pooh decides by
+cutting.
+
+Winnie-the-Pooh, Christopher Robin, Piglet, Eeyore, Owl, Rabbit, Kanga, Roo
+and Tigger were created by A. A. Milne, with illustrations by E. H. Shepard,
+in *Winnie-the-Pooh* (1926) and *The House at Pooh Corner* (1928). The Disney
+versions of the characters, and the Winnie-the-Pooh trademarks, belong to
+Disney. This project uses the characters only as personas for agents, has no
+artwork, and is not affiliated with or endorsed by the Milne estate,
+E. H. Shepard's estate, Disney or Benjamin Hoff.
