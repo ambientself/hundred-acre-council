@@ -280,14 +280,29 @@ async function runPanel(persona) {
       { label: `${tag}:${name(r)}`, phase: 'Proposals', schema: POINTS, ...seat(r.key) })
       .then(out => out ? { role: name(r), ...out } : null)))).filter(Boolean)
 
-  const proposalText = proposals.map(p => `### ${p.role}\n${j({ headline: p.headline, points: p.points, recommendation: p.recommendation })}`).join('\n\n')
+  // A seat that failed (an agent error, or agent_prefix set without the plugin installed) comes back
+  // null. Say so, and never let a verdict be written on an empty or silently thinned panel.
+  const absent = (roles, got) => roles.map(name).filter(n => !got.some(g => g.role === n))
+  const hint = seated ? ` (is the plugin installed, and is agent_prefix "${AGENT_PREFIX}" right?)` : ''
+  const missingProposals = absent(PROPOSERS, proposals)
+  if (missingProposals.length) log(`${tag}: ${missingProposals.length} of ${PROPOSERS.length} proposals failed: ${missingProposals.join(', ')}${hint}`)
+  if (!proposals.length) {
+    log(`${tag}: no proposals came back; stopping this panel without a verdict`)
+    return { proposals, critiques: [], woozle: null, verdict: null, failed: 'no proposals' }
+  }
+  const absentNote = (roles) => roles.length ? `\n\n(Not heard from, because their seats failed: ${roles.join(', ')}. Treat the panel as incomplete.)` : ''
+
+  const proposalText = proposals.map(p => `### ${p.role}\n${j({ headline: p.headline, points: p.points, recommendation: p.recommendation })}`).join('\n\n') + absentNote(missingProposals)
 
   const critiques = (await parallel(CRITICS.map(r => () =>
     agent(`${intro(r)}\n\n${BRIEF}\n\nTHE PROPOSALS:\n${proposalText}\n\nYOUR JOB: ${r.job}${persona ? '' : '\nLeave in_character and for_the_wood empty.'}`,
       { label: `${tag}:${name(r)}`, phase: 'Critique', schema: CRITIQUE, ...seat(r.key) })
       .then(out => out ? { role: name(r), ...out } : null)))).filter(Boolean)
 
-  const critiqueText = critiques.map(c => `### ${c.role}\n${j({ headline: c.headline, story: c.story, critiques: c.critiques, missing: c.missing })}`).join('\n\n')
+  const missingCritiques = absent(CRITICS, critiques)
+  if (missingCritiques.length) log(`${tag}: ${missingCritiques.length} of ${CRITICS.length} critiques failed: ${missingCritiques.join(', ')}${hint}`)
+
+  const critiqueText = critiques.map(c => `### ${c.role}\n${j({ headline: c.headline, story: c.story, critiques: c.critiques, missing: c.missing })}`).join('\n\n') + absentNote(missingCritiques)
 
   const woozle = await agent(`${WOOZLE_JOB(persona, seated)}\n\n${BRIEF}\n\nPANEL MATERIAL:\n${proposalText}\n\n${critiqueText}`,
     { label: `${tag}:${persona ? 'woozle-hunt' : 'evidence-check'}`, phase: 'Woozle hunt', schema: WOOZLE, ...(persona ? seat('christopher-robin') : {}) })
@@ -295,6 +310,7 @@ async function runPanel(persona) {
 
   const verdict = await agent(`${persona ? POOH_JOB(seated) : PLAIN_SYNTH_JOB}\n\n${BRIEF}\n\nPROPOSALS:\n${proposalText}\n\nCRITIQUES:\n${critiqueText}\n\n${persona ? 'WOOZLE HUNT' : 'EVIDENCE CHECK'}:\n${woozle ? j(woozle) : '(the hunt failed; no claims were checked — treat every claim as unverified)'}`,
     { label: `${tag}:${persona ? 'pooh' : 'synthesizer'}`, phase: 'Pooh', schema: VERDICT, ...(persona ? seat('pooh') : {}) })
+  if (!verdict) log(`${tag}: the ${persona ? 'Pooh' : 'synthesizer'} verdict failed${hint}`)
 
   return { proposals, critiques, woozle, verdict }
 }

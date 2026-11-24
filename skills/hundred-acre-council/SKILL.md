@@ -36,7 +36,11 @@ Any character can be called alone with the Agent tool, subagent_type as in the
 table (requires the plugin; bare names like `eeyore` work only if nothing else
 claims them). Give them what the council would give them: the question, where
 the evidence lives, and who decides. They gather their own footing when no
-dossier exists, cite what they read, and work read-only. Use this for the
+dossier exists, cite what they read, and work read-only. Read-only is
+enforced, not just asked: no character has a shell (Owl, who reads the open
+web, least of all), and none can write. When the evidence is git history or a
+diff, gather it yourself (`gh pr diff`, `git log`) and pass it in or save it to
+a file they can read. Use this for the
 small occasions — a pre-mortem on a design doc, Piglet on a risky PR, a Woozle
 hunt over a strategy memo, Pooh over a pile of options — and save the full
 council for decisions. After a standalone answer, append its `For the wood:`
